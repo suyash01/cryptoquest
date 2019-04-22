@@ -1,203 +1,144 @@
-const express = require('express');
-const router = express.Router();
+const router = require("express").Router();
+const { body, validationResult } = require("express-validator/check");
 
-const Chal = require('../models/chal');
-const Answer = require('../models/answer');
-const Auth = require('../middlewares/auth');
+const Chal = require("../models/chal");
+const Answer = require("../models/answer");
+const Auth = require("../middlewares/auth");
 
-router.post('/add', Auth.authenticateAdmin, (req, res, next) => {
-    req.checkBody('title', 'Title is required').notEmpty();
-    req.checkBody('desc', 'Description is required').notEmpty();
-    req.checkBody('author', 'Author is required').notEmpty();
-    req.checkBody('points', 'Points is required').notEmpty();
-    req.checkBody('flag', 'Flag is required').notEmpty();
+router.post(
+  "/add",
+  [body("title").isLength({ min: 1 }), body("author").isLength({ min: 1 }), body("points").isNumeric(), body("flag").isLength({ min: 1 })],
+  Auth.authenticateAdmin,
+  (req, res, next) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) return res.status(422).json({ status: 0, msg: "Invalid Details", data: null });
 
-    const errors = req.validationErrors();
+    const chal = new Chal({
+      title: req.body.title,
+      desc: req.body.desc,
+      author: req.body.author,
+      points: req.body.points,
+      flag: req.body.flag
+    });
+    chal
+      .save()
+      .then(chal => {
+        return res.status(201).json({ status: 0, msg: "Chal Created", data: null });
+      })
+      .catch(err => {
+        return res.status(500).json({ status: 0, msg: "Server Error", data: null });
+      });
+  }
+);
 
-    if(!errors){
-        const chal = new Chal({
-            title: req.body.title,
-            desc: req.body.desc,
-            author: req.body.author,
-            points: req.body.points,
+router.get("/", Auth.authenticateAll, (req, res, next) => {
+  if (req.user.role === "user") {
+    Chal.find({}, "title desc points files author users")
+      .exec()
+      .then(chals => {
+        res.status(200).json({ status: 1, msg: "", data: { chals } });
+      })
+      .catch(err => {
+        res.status(500).json({ status: 0, msg: "Server Error", data: null });
+      });
+  } else {
+    Chal.find({})
+      .exec()
+      .then(chals => {
+        res.status(200).json({ status: 1, msg: "", data: { chals } });
+      })
+      .catch(err => {
+        res.status(500).json({ status: 0, msg: "Server Error", data: null });
+      });
+  }
+});
+
+router.post("/:id", [body("flag").isLength({ min: 1 })], Auth.authenticateUser, (req, res, next) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) return res.status(422).json({ status: 0, msg: "Flag is required", data: null });
+
+  Chal.findById(req.params.id)
+    .exec()
+    .then(chal => {
+      if (chal.flag === req.body.flag) {
+        if (chal.users.indexOf(req.user.username) === -1) {
+          const answer = new Answer({
+            chal: chal.title,
+            user: req.user.name,
             flag: req.body.flag,
-        });
-        chal.save()
-        .then(result => {
-            res.status(201).json({
-                status: 1,
-                msg: "Challenge added successfully"
-            });
-        })
-        .catch(err => {
-            console.log(err);
-            res.status(500).json({
-                status: 0,
-                error: "Internal Server Error"
-            });
-        });
-    }
-    else{
-        console.log(errors);
-        res.status(500).json({
-            status: 0,
-            error: "All fields are required"
-        });
-    }
-});
-
-router.get('/', Auth.authenticateAll, (req, res, next) => {
-    Chal.find({}, 'title desc points files author users').then(chals => {
-        res.status(200).json({
-            status: 0,
-            chals: chals
-        });
-    })
-    .catch(err => {
-        console.log(err);
-        res.status(500).json({
-            status: 0,
-            error: "Internal server error"
-        });
-    });
-});
-
-router.post('/:id', Auth.authenticateUser, (req, res, next) => {
-    req.validate('flag', 'Flag is required').notEmpty();
-    const errors = req.validationErrors();
-
-    if(!errors){
-        Chal.findById(req.params.id).exec()
-        .then(chal => {
-            if(chal.flag===req.body.flag){
-                if(chal.users.indexOf(req.user.name)>-1){
-                    const answer = new Answer({
-                        chal: req.params.id,
-                        user: req.user.id,
-                        flag: req.body.flag,
-                        status: "correct"
-                    });
-                    answer.save()
-                    .then(result =>{
-                        res.status(200).json({
-                            status: 1,
-                            solved: 1,
-                            msg: "You have already solved the challenge :P"
-                        });
-                    })
-                    .catch(err =>{
-                        console.log(err);
-                        res.status(500).json({
-                            status: 0,
-                            error: "Internal Server Error"
-                        });
-                    });
-                }
-                else{
-                    Chal.findByIdAndUpdate(req.params.id, {$push: {users: req.user.name}}).exec()
-                    .then(chal => {
-                        const answer = new Answer({
-                            chal: req.params.id,
-                            user: req.user.id,
-                            flag: req.body.flag,
-                            status: "correct"
-                        });
-                        answer.save()
-                        .then(result =>{
-                            res.status(200).json({
-                                status: 1,
-                                solved: 1,
-                                msg: "Congratulations!! You have solved the challenge :)"
-                            });
-                        })
-                        .catch(err =>{
-                            console.log(err);
-                            res.status(500).json({
-                                status: 0,
-                                error: "Internal Server Error"
-                            });
-                        });
-                    })
-                    .catch(err => {
-                        console.log(err);
-                        res.status(500).json({
-                            status: 0,
-                            error: "Internal server error"
-                        });
-                    });
-                }
-            }
-            else{
-                const answer = new Answer({
-                    chal: req.params.id,
-                    user: req.user.id,
-                    flag: req.body.flag,
-                    status: "wrong"
-                });
-                answer.save()
-                .then(result =>{
-                    res.status(200).json({
-                        status: 1,
-                        solved: 0,
-                        msg: "That's not the correct flag :("
-                    });
+            status: "Correct"
+          });
+          answer
+            .save()
+            .then(ans => {
+              Chal.findByIdAndUpdate(req.params.id, { $push: { users: req.user.name } })
+                .exec()
+                .then(result => {
+                  return res.status(200).json({ status: 1, msg: "Correct", data: null });
                 })
-                .catch(err =>{
-                    console.log(err);
-                    res.status(500).json({
-                        status: 0,
-                        error: "Internal Server Error"
-                    });
+                .catch(err => {
+                  return res.status(500).json({ status: 0, msg: "Server Error", data: null });
                 });
-            }
-        })
-        .catch(err => {
-            console.log(err);
-            res.status(500).json({
-                status: 0,
-                error: "Internal server error"
+            })
+            .catch(err => {
+              res.status(500).json({ status: 0, msg: "Server Error", data: null });
             });
+        } else return res.status(200).json({ status: 0, msg: "Already Solved", data: null });
+      } else {
+        const answer = new Answer({
+          chal: chal.title,
+          user: req.user.name,
+          flag: req.body.flag,
+          status: "Wrong"
         });
-    }
-    else{
-        res.status(500).json({
-            status: 0,
-            error: "Flag is required"
-        });
-    }
-});
-
-router.get('/:id/flag', Auth.authenticateAdmin, (req, res, next) => {
-    Chal.findById(req.params.id, 'flag').exec()
-    .then(result => {
-        res.status(200).json({
-            status: 1,
-            msg: result.flag
-        });
+        answer
+          .save()
+          .then(ans => {
+            return res.status(200).json({ status: 0, msg: "Wrong", data: null });
+          })
+          .catch(err => {
+            res.status(500).json({ status: 0, msg: "Server Error", data: null });
+          });
+      }
     })
     .catch(err => {
-        console.log(err);
-        res.status(500).json({
-            status: 0,
-            error: "Internal Server Error"
-        });
+      res.status(500).json({ status: 0, msg: "Server Error", data: null });
     });
 });
 
-router.delete('/:id', Auth.authenticateAdmin, (req, res, next) => {
-    Chal.remove({_id: req.params.id}).exec()
+router.get("/:id/flag", Auth.authenticateAdmin, (req, res, next) => {
+  Chal.findById(req.params.id, "flag")
+    .exec()
     .then(result => {
-        res.status(200).json({
-            status: 1,
-            msg: "Chal deleted"
-        });
+      res.status(200).json({
+        status: 1,
+        msg: result.flag
+      });
     })
     .catch(err => {
-        console.log(err);
-        res.status(500).json({
-            status: 0,
-            error: "Internal Server Error"
-        });
+      console.log(err);
+      res.status(500).json({
+        status: 0,
+        error: "Internal Server Error"
+      });
+    });
+});
+
+router.delete("/:id", Auth.authenticateAdmin, (req, res, next) => {
+  Chal.remove({ _id: req.params.id })
+    .exec()
+    .then(result => {
+      res.status(200).json({
+        status: 1,
+        msg: "Chal deleted"
+      });
+    })
+    .catch(err => {
+      console.log(err);
+      res.status(500).json({
+        status: 0,
+        error: "Internal Server Error"
+      });
     });
 });
 

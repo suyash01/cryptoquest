@@ -1,17 +1,13 @@
 const express = require('express');
-const path = require('path');
 const morgan = require('morgan');
 const mongoose = require('mongoose');
-const bodyParser = require('body-parser');
-const expressValidator = require('express-validator');
-const dotenv = require('dotenv');
 const cors = require('cors');
-dotenv.config();
+require('dotenv').config();
 const app = express();
 const port = process.env.PORT || 3000;
 
 // Connecting to the DB
-mongoose.connect('mongodb://localhost/cryptoquest');
+mongoose.connect('mongodb://localhost/cryptoquest', { useNewUrlParser: true, useCreateIndex: true });
 
 mongoose.connection.on('open', () => {
     console.log("Connected to the DB");
@@ -27,9 +23,7 @@ const chals = require("./routes/chals");
 // Middleware Setup
 app.use(morgan('dev'));
 app.use(cors());
-app.use(bodyParser.urlencoded({ extended: false }));
-app.use(bodyParser.json());
-app.use(expressValidator());
+app.use(express.json());
 app.use(express.static(__dirname+'/public'));
 
 // Importing Routes
@@ -53,5 +47,5 @@ app.use((error, req, res, next) => {
 
 // Starting the Server
 app.listen(port, () => {
-    console.log("Listening on port: "+port);
+    console.log("Listening on port: " + port);
 });

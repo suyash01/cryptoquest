@@ -1,0 +1,18 @@
+/* You can add global styles to this file, and also import other style files */
+button:disabled {
+  cursor: not-allowed;
+}
+
+input.ng-invalid.ng-touched{
+  border-color: #dc3545;
+  border-width: 2px;
+}
+
+input.ng-valid.ng-touched{
+  border-color: #28a745;
+  border-width: 2px;
+}
+
+.invalid-feedback{
+  display: block;
+}

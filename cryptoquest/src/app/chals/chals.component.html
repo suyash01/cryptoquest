@@ -1,0 +1,31 @@
+<div class="accordion" id="chalsAccordion">
+  <div class="card rounded-0" *ngFor="let chal of chals">
+    <a data-toggle="collapse" href="#{{ chal._id }}"
+      ><div class="card-header text-dark">
+        <p class="mb-0">
+          {{ chal.title }}<small> - {{ chal.author }}</small>
+        </p>
+        <p class="mb-0 ml-auto">{{ chal.points }}<span *ngIf="chal.solved"> - Solved</span></p>
+      </div></a
+    >
+    <div id="{{ chal._id }}" class="collapse" data-parent="#chalsAccordion">
+      <div class="card-body" [innerHTML]="chal.desc"></div>
+      <div class="card-footer" *ngIf="!userService.admin">
+        <form [formGroup]="flagForm" style="width: 100%">
+          <div class="input-group">
+            <input type="text" class="form-control rounded-0" placeholder="Flag" formControlName="flag" />
+            <div class="input-group-append">
+              <button class="btn btn-primary rounded-0" [disabled]="!flagForm.valid || chal.solved" (click)="submitFlag(chal._id)">Submit</button>
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="card-footer" *ngIf="userService.admin">
+        <div class="ml-auto">
+          <button class="btn btn-danger rounded-0"><fa-icon [icon]="['fas', 'trash']"></fa-icon></button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<button class="btn btn-primary add-chal-btn" routerLink="/chals/add" *ngIf="userService.admin"><fa-icon [icon]="['fas', 'plus']"></fa-icon></button>

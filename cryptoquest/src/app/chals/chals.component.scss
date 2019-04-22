@@ -1,0 +1,24 @@
+.add-chal-btn {
+  position: absolute;
+  bottom: 5vh;
+  right: 5vh;
+  border-radius: 50%;
+  height: 4rem;
+  width: 4rem;
+  font-size: 1.5rem;
+}
+
+a {
+  text-decoration: none;
+}
+
+.card-header {
+  display: flex !important;
+  flex-basis: auto;
+  font-weight: bold;
+}
+
+.card-footer {
+  display: flex !important;
+  flex-basis: auto;
+}
