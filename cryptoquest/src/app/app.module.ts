@@ -19,7 +19,8 @@ import {
   faPlus,
   faTrash,
   faPen,
-  faCheck
+  faCheck,
+  faTimes
 } from "@fortawesome/free-solid-svg-icons";
 
 import { AppRoutingModule } from "./app-routing.module";
@@ -48,6 +49,6 @@ import { AddChalComponent } from "./chals/add-chal/add-chal.component";
 })
 export class AppModule {
   constructor() {
-    library.add(faUser, faUsers, faSignal, faInfoCircle, faListOl, faSignOutAlt, faUserCog, faPlus, faTrash, faPen, faCheck);
+    library.add(faUser, faUsers, faSignal, faInfoCircle, faListOl, faSignOutAlt, faUserCog, faPlus, faTrash, faPen, faCheck, faTimes);
   }
 }

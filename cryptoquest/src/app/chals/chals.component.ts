@@ -12,7 +12,7 @@ import { Response } from "../interfaces/response";
 })
 export class ChalsComponent implements OnInit {
   chals = [];
-  deleteChalConfirm: boolean = false;
+  deleteChalConfirm = [];
   flagsGroup: FormGroup = new FormGroup({
     flags: new FormArray([])
   });
@@ -30,6 +30,7 @@ export class ChalsComponent implements OnInit {
         const chals = data.data["chals"];
         const flags = this.flagsGroup.controls.flags as FormArray;
         chals.forEach(chal => {
+          this.deleteChalConfirm.push(false);
           if (chal.users.indexOf(this.userService.name) !== -1) {
             chal.solved = true;
             flags.push(new FormControl({ value: "", disabled: true }, Validators.required));
@@ -64,19 +65,14 @@ export class ChalsComponent implements OnInit {
   }
 
   deleteChal(id: string) {
-    if (this.deleteChalConfirm) {
-      this.chalService.delete(id).subscribe(
-        (data: Response) => {
-          this.toast.success(data.msg, "Yay!!!");
-          this.deleteChalConfirm = !this.deleteChalConfirm;
-          this.getAllChals();
-        },
-        err => {
-          this.toast.error(err.error.msg, "Oops!!!");
-        }
-      );
-    } else {
-      this.deleteChalConfirm = !this.deleteChalConfirm;
-    }
+    this.chalService.delete(id).subscribe(
+      (data: Response) => {
+        this.toast.success(data.msg, "Yay!!!");
+        this.getAllChals();
+      },
+      err => {
+        this.toast.error(err.error.msg, "Oops!!!");
+      }
+    );
   }
 }

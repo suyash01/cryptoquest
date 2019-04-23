@@ -8,6 +8,6 @@ A web portal to conduct CTF based competetion.
 
    - PORT - Port for the server
    - SECRET - passphrase for the jwt
-   - DBURL - URL for the `mongodb` database
+   - DBURL - URL for the `mongodb`
 
 3. Run `npm start` to start the server

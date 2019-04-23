@@ -22,14 +22,17 @@
         <div class="card-footer" *ngIf="userService.admin">
           <code>{{ chal.flag }}</code>
           <div class="ml-auto">
+            <button class="btn btn-danger rounded-0 mr-3" *ngIf="deleteChalConfirm[i]" (click)="deleteChal(chal._id)">
+              <fa-icon [icon]="['fas', 'check']"></fa-icon>
+            </button>
             <button
               class="btn rounded-0"
-              [class.btn-danger]="!deleteChalConfirm"
-              [class.btn-warning]="deleteChalConfirm"
-              (click)="deleteChal(chal._id)"
+              [class.btn-danger]="!deleteChalConfirm[i]"
+              [class.btn-secondary]="deleteChalConfirm[i]"
+              (click)="deleteChalConfirm[i] = !deleteChalConfirm[i]"
             >
-              <fa-icon [icon]="['fas', 'trash']" *ngIf="!deleteChalConfirm"></fa-icon>
-              <fa-icon [icon]="['fas', 'check']" *ngIf="deleteChalConfirm"></fa-icon>
+              <fa-icon [icon]="['fas', 'trash']" *ngIf="!deleteChalConfirm[i]"></fa-icon>
+              <fa-icon [icon]="['fas', 'times']" *ngIf="deleteChalConfirm[i]"></fa-icon>
             </button>
             <!-- <button class="btn btn-warning rounded-0 ml-3"><fa-icon [icon]="['fas', 'pen']"></fa-icon></button> -->
           </div>
