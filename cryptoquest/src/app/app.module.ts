@@ -8,7 +8,19 @@ import { ToastrModule } from "ngx-toastr";
 import { FontAwesomeModule } from "@fortawesome/angular-fontawesome";
 import { library } from "@fortawesome/fontawesome-svg-core";
 import { CKEditorModule } from "@ckeditor/ckeditor5-angular";
-import { faUser, faUsers, faSignal, faInfoCircle, faListOl, faSignOutAlt, faUserCog, faPlus, faTrash } from "@fortawesome/free-solid-svg-icons";
+import {
+  faUser,
+  faUsers,
+  faSignal,
+  faInfoCircle,
+  faListOl,
+  faSignOutAlt,
+  faUserCog,
+  faPlus,
+  faTrash,
+  faPen,
+  faCheck
+} from "@fortawesome/free-solid-svg-icons";
 
 import { AppRoutingModule } from "./app-routing.module";
 import { AppComponent } from "./app.component";
@@ -36,6 +48,6 @@ import { AddChalComponent } from "./chals/add-chal/add-chal.component";
 })
 export class AppModule {
   constructor() {
-    library.add(faUser, faUsers, faSignal, faInfoCircle, faListOl, faSignOutAlt, faUserCog, faPlus, faTrash);
+    library.add(faUser, faUsers, faSignal, faInfoCircle, faListOl, faSignOutAlt, faUserCog, faPlus, faTrash, faPen, faCheck);
   }
 }

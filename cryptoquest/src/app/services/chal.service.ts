@@ -20,12 +20,15 @@ export class ChalService {
     return this.http.post<Response>(this.url + "/chals/add", data, this.httpOptions);
   }
 
+  delete(id: string) {
+    return this.http.delete<Response>(this.url + "/chals/" + id, this.httpOptions);
+  }
+
   getAll() {
     return this.http.get<Response>(this.url + "/chals", this.httpOptions);
   }
 
   submitFlag(data: object, id: string) {
-    id = id.slice(1);
     return this.http.post<Response>(this.url + "/chals/" + id, data, this.httpOptions);
   }
 }

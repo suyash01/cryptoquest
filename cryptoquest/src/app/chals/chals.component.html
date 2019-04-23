@@ -1,31 +1,62 @@
-<div class="accordion" id="chalsAccordion">
-  <div class="card rounded-0" *ngFor="let chal of chals">
-    <a data-toggle="collapse" href="#{{ chal._id }}"
-      ><div class="card-header text-dark">
-        <p class="mb-0">
-          {{ chal.title }}<small> - {{ chal.author }}</small>
-        </p>
-        <p class="mb-0 ml-auto">{{ chal.points }}<span *ngIf="chal.solved"> - Solved</span></p>
-      </div></a
-    >
-    <div id="{{ chal._id }}" class="collapse" data-parent="#chalsAccordion">
-      <div class="card-body" [innerHTML]="chal.desc"></div>
-      <div class="card-footer" *ngIf="!userService.admin">
-        <form [formGroup]="flagForm" style="width: 100%">
+<div [formGroup]="flagsGroup">
+  <div class="accordion" id="chalsAccordion" formArrayName="flags">
+    <div class="card rounded-0" *ngFor="let chal of chals; let i = index">
+      <a data-toggle="collapse" href="#_{{ chal._id }}"
+        ><div class="card-header text-dark">
+          <p class="mb-0">
+            {{ chal.title }}<small> - {{ chal.author }}</small>
+          </p>
+          <p class="mb-0 ml-auto">{{ chal.points }}<span *ngIf="chal.solved"> - Solved</span></p>
+        </div></a
+      >
+      <div id="_{{ chal._id }}" class="collapse" data-parent="#chalsAccordion">
+        <div class="card-body" [innerHTML]="chal.desc"></div>
+        <div class="card-footer" *ngIf="!userService.admin">
           <div class="input-group">
-            <input type="text" class="form-control rounded-0" placeholder="Flag" formControlName="flag" />
+            <input type="text" class="form-control rounded-0" placeholder="Flag" [formControlName]="i" />
             <div class="input-group-append">
-              <button class="btn btn-primary rounded-0" [disabled]="!flagForm.valid || chal.solved" (click)="submitFlag(chal._id)">Submit</button>
+              <button class="btn btn-primary rounded-0" [disabled]="!isFlagValid(i) || chal.solved" (click)="submitFlag(chal._id, i)">Submit</button>
             </div>
           </div>
-        </form>
-      </div>
-      <div class="card-footer" *ngIf="userService.admin">
-        <div class="ml-auto">
-          <button class="btn btn-danger rounded-0"><fa-icon [icon]="['fas', 'trash']"></fa-icon></button>
+        </div>
+        <div class="card-footer" *ngIf="userService.admin">
+          <code>{{ chal.flag }}</code>
+          <div class="ml-auto">
+            <button
+              class="btn rounded-0"
+              [class.btn-danger]="!deleteChalConfirm"
+              [class.btn-warning]="deleteChalConfirm"
+              (click)="deleteChal(chal._id)"
+            >
+              <fa-icon [icon]="['fas', 'trash']" *ngIf="!deleteChalConfirm"></fa-icon>
+              <fa-icon [icon]="['fas', 'check']" *ngIf="deleteChalConfirm"></fa-icon>
+            </button>
+            <!-- <button class="btn btn-warning rounded-0 ml-3"><fa-icon [icon]="['fas', 'pen']"></fa-icon></button> -->
+          </div>
         </div>
       </div>
     </div>
   </div>
 </div>
+
 <button class="btn btn-primary add-chal-btn" routerLink="/chals/add" *ngIf="userService.admin"><fa-icon [icon]="['fas', 'plus']"></fa-icon></button>
+
+<div class="modal fade" tabindex="-1" role="dialog">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Delete</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <p>Delete the challenge?</p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-danger">Delete</button>
+      </div>
+    </div>
+  </div>
+</div>
